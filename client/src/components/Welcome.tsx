@@ -5,6 +5,7 @@ import { BsInfoCircle } from "react-icons/bs";
 
 import { Loader } from "./";
 import { TransactionContext } from "../context/TransactionContext";
+import { shortenAddress } from "../utils/shortenAddress";
 
 type InputProps = {
     placeholder: string;
@@ -41,6 +42,7 @@ const Welcome = () => {
     const {
         connectWallet,
         currentAccount,
+        isLoading,
         formData,
         setFormData,
         handleChange,
@@ -107,7 +109,7 @@ const Welcome = () => {
                             </div>
                             <div>
                                 <p className="text-white font-light text-sm">
-                                    Address
+                                    { shortenAddress(currentAccount) }
                                 </p>
                                 <p className="text-white font-semibold text-lg mt-1">
                                     Ethereum
@@ -142,7 +144,7 @@ const Welcome = () => {
                             handleChange={handleChange}
                         />
                         <div className="h-[1px] w-full bg-gray-400 my-2" />
-                        {false ? (
+                        {isLoading ? (
                             <Loader />
                         ) : (
                             <button

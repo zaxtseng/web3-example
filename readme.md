@@ -72,6 +72,9 @@ npx hardhat
 
 ### 获取私钥
 在mask上,账户详情.
+
+# 防盗指南
+注意,上面的两个key建议用env设置,上传到github很容易就被盗号了(我的就是被盗了).
 ## 执行部署
 ```bash
 npx hardhat run scripts/deploy.js --network goerli
@@ -97,3 +100,22 @@ export const contractABI = abi.abi;
 
 # client部分
 新建`src/context`文件夹.
+新建`TransactionContext.tsx`.
+
+## 虚拟变量
+复制`utils/dummyData.js`文件.
+
+
+## 注册giphy开发者
+网址`developers.giphy.com`.
+
+## Transactions.tsx
+在这里添加git相关
+
+## 新增useFetch
+创建hooks文件夹,新建useFetch文件.然后在Transactions.tsx中引入.
+
+## Footer
+
+# 最后
+尽量将私密性比较高的字符串,比如合约地址,私钥等使用`env`的方法引入,防止被盗.

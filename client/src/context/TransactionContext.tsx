@@ -38,9 +38,36 @@ export const TransactionProvider = ({children}:{children:ReactNode}) => {
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [transactionCount, setTransactionCount] = useState<number>(localStorage.getItem('transactionCount'));
+    const [transactions, setTransactions] = useState([]);
+
 
     const handleChange = (e:ChangeEvent<HTMLInputElement>, name:string) => {
         setFormData((prevState) => ({...prevState, [name]: e.target.value }))
+    }
+    // 获取所有转移交易
+    const getAllTransactions = async () => {
+        try {
+            if(!ethereum) return alert("Please install metamask")
+            const transactionContract = getEthereumContract();
+
+            const availableTransactions = await transactionContract.getAllTransactions();
+            console.log('availableTransactions: ', availableTransactions);
+
+            const structuredTransactions = availableTransactions.map((transaction) => ({
+                addressTo: transaction.receiver,
+                addressFrom: transaction.sender,
+                timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
+                message: transaction.message,
+                keyword: transaction.keyword,
+                amount: parseInt(transaction.amount._hex) / (10 ** 18)
+              }));
+
+              setTransactions(structuredTransactions);
+
+        } catch (error) {
+            console.log('error: ', error);
+            
+        }
     }
 
     // 检查钱包是否链接
@@ -52,6 +79,8 @@ export const TransactionProvider = ({children}:{children:ReactNode}) => {
     
             if(accounts.length) {
                 setCurrentAccount(accounts[0])
+                
+                getAllTransactions();
             }else{
                 console.log('No account found')
                 }
@@ -70,6 +99,7 @@ export const TransactionProvider = ({children}:{children:ReactNode}) => {
             console.log('accounts: ', accounts[0]);
             
             setCurrentAccount(accounts[0]);
+
         } catch (error) {
             console.log('error', error);
             throw new Error("No ethereum object");
@@ -109,20 +139,39 @@ export const TransactionProvider = ({children}:{children:ReactNode}) => {
             const transactionCount = await transactionsContract.getTransactionCount()
             setTransactionCount(transactionCount.toNumber());
 
+            window.reload();
+
         } catch (error) {
             console.log('error', error);
             throw new Error("No ethereum object");
         }
     }
 
+    // 检查交易是否存在
+    const checkIfTransactionsExist = async () => {
+        try {
+            // 交易合约和交易数量
+            const transactionsContract =  getEthereumContract();
+            const transactionCount = await transactionsContract.getTransactionCount()
+            // 存储交易数量到本地
+            window.localStorage.setItem('transactionCount',transactionCount)
+            
+        } catch (error) {
+            console.log('error', error);
+            throw new Error("No ethereum object");
+        }
+    }
+
+
     useEffect(() => {
         // 初次挂载时检查
-      checkedIfWalletIsConnected()
+      checkedIfWalletIsConnected();
+      checkIfTransactionsExist();
     }, [])
     
 
     return (
-        <TransactionContext.Provider value={{connectWallet, currentAccount, formData, setFormData, handleChange,sendTransaction }}>
+        <TransactionContext.Provider value={{connectWallet, currentAccount, formData, setFormData, handleChange,sendTransaction,transactions, isLoading }}>
             {children}
         </TransactionContext.Provider>
     )
